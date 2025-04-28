@@ -26,7 +26,7 @@ workflow {
 
 ## Parameters
 
-There are two ways to declare parameters in a Nextflow script: the `params` block and *legacy* parameters.
+Parameters can be declared in a Nextflow script with the `params` block or with *legacy* parameter declarations.
 
 ### Params block
 
