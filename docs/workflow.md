@@ -65,7 +65,7 @@ workflow {
 ```
 
 :::{note}
-Named workflows should not use params. They should receive their inputs explicitly through the `take:` section.
+While params can be used outside the entry workflow, Nextflow will not be able to validate them at compile-time. Only params used in the entry workflow are validated against the params definition. Params can be passed to workflows and processes as explicit inputs to enable compile-time validation.
 :::
 
 The default value can be overridden by the command line, params file, or config file. Parameters from multiple sources are resolved in the order described in {ref}`cli-params`.
