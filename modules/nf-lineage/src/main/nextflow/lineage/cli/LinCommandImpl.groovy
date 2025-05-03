@@ -35,7 +35,7 @@ import nextflow.lineage.LinUtils
 import nextflow.lineage.model.FileOutput
 import nextflow.lineage.model.Parameter
 import nextflow.lineage.model.TaskRun
-import nextflow.lineage.model.WorkflowRun
+import nextflow.lineage.model.WorkflowLaunch
 import nextflow.lineage.serde.LinEncoder
 import nextflow.ui.TableBuilder
 import org.eclipse.jgit.diff.DiffAlgorithm
@@ -62,7 +62,7 @@ class LinCommandImpl implements CmdLineage.LinCommand {
     static final private String ERR_NOT_LOADED = 'Error lineage store not loaded - Check Nextflow configuration'
     
     @Override
-    void log(ConfigMap config) {
+    void list(ConfigMap config) {
         final session = new Session(config)
         final store = LinStoreFactory.getOrCreate(session)
         if (store) {
@@ -82,7 +82,8 @@ class LinCommandImpl implements CmdLineage.LinCommand {
             .head('TIMESTAMP')
             .head('RUN NAME')
             .head('SESSION ID')
-            .head('LINEAGE ID')
+            .head('LAUNCH LID')
+            .head('RUN LID')
         for (LinHistoryRecord record : records) {
             table.append(record.toList())
         }
@@ -90,7 +91,7 @@ class LinCommandImpl implements CmdLineage.LinCommand {
     }
 
     @Override
-    void describe(ConfigMap config, List<String> args) {
+    void view(ConfigMap config, List<String> args) {
         if( !isLidUri(args[0]) )
             throw new Exception("Identifier is not a lineage URL")
         final store = LinStoreFactory.getOrCreate(new Session(config))
@@ -155,11 +156,11 @@ class LinCommandImpl implements CmdLineage.LinCommand {
         final lidObject = store.load(key)
         switch (lidObject.getClass()) {
             case FileOutput:
-                processDataOutput(lidObject as FileOutput, lines, nodeToRender, nodes, edges)
+                processFileOutput(lidObject as FileOutput, lines, nodeToRender, nodes, edges)
                 break;
 
-            case WorkflowRun:
-                processWorkflowRun(lidObject as WorkflowRun, lines, nodeToRender, edges)
+            case WorkflowLaunch:
+                processWorkflowLaunch(lidObject as WorkflowLaunch, lines, nodeToRender, edges)
                 break
 
             case TaskRun:
@@ -186,7 +187,7 @@ class LinCommandImpl implements CmdLineage.LinCommand {
         }
     }
 
-    private void processWorkflowRun(WorkflowRun wfRun, List<String> lines, String nodeToRender, LinkedList<Edge> edges) {
+    private void processWorkflowLaunch(WorkflowLaunch wfRun, List<String> lines, String nodeToRender, LinkedList<Edge> edges) {
         lines << """    ${nodeToRender}@{shape: processes, label: \"${wfRun.name} [${nodeToRender}]\"}""".toString()
         final parameters = wfRun.params
         parameters.each {
@@ -197,7 +198,7 @@ class LinCommandImpl implements CmdLineage.LinCommand {
         }
     }
 
-    private void processDataOutput(FileOutput lidObject, List<String> lines, String nodeToRender, LinkedList<String> nodes, LinkedList<Edge> edges){
+    private void processFileOutput(FileOutput lidObject, List<String> lines, String nodeToRender, LinkedList<String> nodes, LinkedList<Edge> edges){
         lines << "    ${nodeToRender}@{shape: document, label: \"${nodeToRender}\"}".toString();
         final source = lidObject.source
         if(! source )

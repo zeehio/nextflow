@@ -26,9 +26,10 @@ interface LinHistoryLog {
      *
      * @param name Workflow execution name.
      * @param sessionId Workflow session ID.
+     * @param launchLid Workflow launch Lineage ID.
      * @param runLid Workflow run ID.
      */
-    void write(String name, UUID sessionId, String runLid)
+    void write(String name, UUID sessionId, String launchLid, String runLid)
 
     /**
      * Updates the run LID for a given session ID.

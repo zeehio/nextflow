@@ -716,20 +716,14 @@ List the Nextflow runs with lineage metadata enabled, printing the corresponding
 
 ```console
 $ nextflow lineage list
-TIMESTAMP          	RUN NAME              	SESSION ID                          	LINEAGE ID                            
-2025-04-22 14:45:43	backstabbing_heyrovsky	21bc4fad-e8b8-447d-9410-388f926a711f	lid://c914d714877cc5c882c55a5428b510b1
+TIMESTAMP               RUN NAME        SESSION ID                              LAUNCH LID                              RUN LID                               
+2025-05-02 19:06:15 CDT stoic_shaw      bc79451f-c573-4b7d-8e7c-697be8d9cefc    lid://cd7197c02ab1250eafc2bf7499715e5f  lid://304c57e48ab6b324715ad2c5ba55b25e
 ```
 
 View a lineage record.
 
 ```console
 $ nextflow lineage view <lid>
-```
-
-The output of a workflow run can be shown by appending `#output` to the workflow run LID:
-
-```console
-$ nextflow lineage view lid://c914d714877cc5c882c55a5428b510b1#output
 ```
 
 :::{tip}

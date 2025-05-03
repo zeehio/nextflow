@@ -44,11 +44,12 @@ class DefaultLinHistoryLogTest extends Specification {
     def "write should add a new file to the history folder"() {
         given:
         UUID sessionId = UUID.randomUUID()
-        String runName = "TestRun"
-        String runLid = "lid://123"
+        def runName = "TestRun"
+        def launchLid = "lid://123"
+        def runLid = "lid://456"
 
         when:
-        linHistoryLog.write(runName, sessionId, runLid)
+        linHistoryLog.write(runName, sessionId, launchLid, runLid)
 
         then:
         def files = historyFile.listFiles()
@@ -56,23 +57,26 @@ class DefaultLinHistoryLogTest extends Specification {
         def parsedRecord = LinHistoryRecord.parse(files[0].text)
         parsedRecord.sessionId == sessionId
         parsedRecord.runName == runName
+        parsedRecord.launchLid == launchLid
         parsedRecord.runLid == runLid
     }
 
     def "should return correct record for existing session"() {
         given:
         UUID sessionId = UUID.randomUUID()
-        String runName = "Run1"
-        String runLid = "lid://123"
+        def runName = "Run1"
+        def launchLid = "lid://123"
+        def runLid = "lid://456"
 
         and:
-        linHistoryLog.write(runName, sessionId, runLid)
+        linHistoryLog.write(runName, sessionId, launchLid, runLid)
 
         when:
         def record = linHistoryLog.getRecord(sessionId)
         then:
         record.sessionId == sessionId
         record.runName == runName
+        record.launchLid == launchLid
         record.runLid == runLid
     }
 
@@ -84,33 +88,16 @@ class DefaultLinHistoryLogTest extends Specification {
     def "update should modify existing Lid for given session"() {
         given:
         UUID sessionId = UUID.randomUUID()
-        String runName = "Run1"
-        String runLidUpdated = "run-lid-updated"
+        def runName = "Run1"
+        def launchLid = "launch-lid"
+        def runLid = "run-lid"
 
         and:
-        linHistoryLog.write(runName, sessionId, 'run-lid-initial')
+        linHistoryLog.write(runName, sessionId, launchLid, '-')
 
         when:
-        linHistoryLog.updateRunLid(sessionId, runLidUpdated)
+        linHistoryLog.updateRunLid(sessionId, runLid)
 
-        then:
-        def files = historyFile.listFiles()
-        files.size() == 1
-        def parsedRecord = LinHistoryRecord.parse(files[0].text)
-        parsedRecord.runLid == runLidUpdated
-    }
-
-    def "update should do nothing if session does not exist"() {
-        given:
-        UUID existingSessionId = UUID.randomUUID()
-        UUID nonExistingSessionId = UUID.randomUUID()
-        String runName = "Run1"
-        String runLid = "lid://123"
-        and:
-        linHistoryLog.write(runName, existingSessionId, runLid)
-
-        when:
-        linHistoryLog.updateRunLid(nonExistingSessionId, "new-lid")
         then:
         def files = historyFile.listFiles()
         files.size() == 1
@@ -118,13 +105,33 @@ class DefaultLinHistoryLogTest extends Specification {
         parsedRecord.runLid == runLid
     }
 
+    def "update should do nothing if session does not exist"() {
+        given:
+        UUID existingSessionId = UUID.randomUUID()
+        UUID nonExistingSessionId = UUID.randomUUID()
+        def runName = "Run1"
+        def launchLid = "lid://123"
+        def runLid = "lid://456"
+        and:
+        linHistoryLog.write(runName, existingSessionId, launchLid, '-')
+
+        when:
+        linHistoryLog.updateRunLid(nonExistingSessionId, runLid)
+        then:
+        def files = historyFile.listFiles()
+        files.size() == 1
+        def parsedRecord = LinHistoryRecord.parse(files[0].text)
+        parsedRecord.runLid == '-'
+    }
+
     def 'should get records' () {
         given:
         UUID sessionId = UUID.randomUUID()
-        String runName = "Run1"
-        String runLid = "lid://123"
+        def runName = "Run1"
+        def launchLid = "lid://123"
+        def runLid = "-"
         and:
-        linHistoryLog.write(runName, sessionId, runLid)
+        linHistoryLog.write(runName, sessionId, launchLid, runLid)
 
         when:
         def records = linHistoryLog.getRecords()
@@ -132,6 +139,7 @@ class DefaultLinHistoryLogTest extends Specification {
         records.size() == 1
         records[0].sessionId == sessionId
         records[0].runName == runName
+        records[0].launchLid == launchLid
         records[0].runLid == runLid
     }
 }

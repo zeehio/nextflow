@@ -28,7 +28,7 @@ import nextflow.lineage.model.DataPath
 import nextflow.lineage.model.Parameter
 import nextflow.lineage.model.TaskRun
 import nextflow.lineage.model.Workflow
-import nextflow.lineage.model.WorkflowRun
+import nextflow.lineage.model.WorkflowLaunch
 import nextflow.lineage.serde.LinEncoder
 import nextflow.plugin.Plugins
 import org.junit.Rule
@@ -77,10 +77,10 @@ class LinCommandImplTest extends Specification{
         def lidLog = new DefaultLinHistoryLog(historyFile)
         def uniqueId = UUID.randomUUID()
         def date = new Date();
-        def recordEntry = "${LinHistoryRecord.TIMESTAMP_FMT.format(date)}\trun_name\t${uniqueId}\tlid://123456".toString()
-        lidLog.write("run_name", uniqueId, "lid://123456", date)
+        def recordEntry = "${LinHistoryRecord.TIMESTAMP_FMT.format(date)}\trun_name\t${uniqueId}\tlid://123\tlid://456".toString()
+        lidLog.write("run_name", uniqueId, "lid://123", "lid://456", date)
         when:
-        new LinCommandImpl().log(configMap)
+        new LinCommandImpl().list(configMap)
         def stdout = capture
             .toString()
             .readLines()// remove the log part
@@ -95,11 +95,11 @@ class LinCommandImplTest extends Specification{
 
     def 'should print no history' (){
         given:
-        def historyFile = storeLocation.resolve(".meta/.history")
+        def historyFile = storeLocation.resolve(".history")
         Files.createDirectories(historyFile.parent)
 
         when:
-        new LinCommandImpl().log(configMap)
+        new LinCommandImpl().list(configMap)
         def stdout = capture
             .toString()
             .readLines()// remove the log part
@@ -125,7 +125,7 @@ class LinCommandImplTest extends Specification{
         def expectedOutput = jsonSer
         lidFile.text = jsonSer
         when:
-        new LinCommandImpl().describe(configMap, ["lid://12345"])
+        new LinCommandImpl().view(configMap, ["lid://12345"])
         def stdout = capture
             .toString()
             .readLines()// remove the log part
@@ -142,7 +142,7 @@ class LinCommandImplTest extends Specification{
         given:
 
         when:
-        new LinCommandImpl().describe(configMap, ["lid://12345"])
+        new LinCommandImpl().view(configMap, ["lid://12345"])
         def stdout = capture
             .toString()
             .readLines()// remove the log part
@@ -245,7 +245,7 @@ class LinCommandImplTest extends Specification{
             "lid://12345", "lid://12345", null, 1234, time, time, null)
         lidFile.text = encoder.encode(entry)
         def wf = new Workflow([new DataPath("/path/to/main.nf)")], "hello-nf", "aasdklk")
-        entry = new WorkflowRun(wf,"sessionId","run_name",
+        entry = new WorkflowLaunch(wf,"sessionId","run_name",
             [new Parameter( "String", "sample_id","ggal_gut"),
              new Parameter("Integer","reads",2)])
         lidFile3.text = encoder.encode(entry)
@@ -278,31 +278,6 @@ class LinCommandImplTest extends Specification{
         outputHtml.text == expectedOutput
     }
 
-    def 'should show an error if trying to do a query'(){
-        given:
-        def lidFile = storeLocation.resolve("12345/.data.json")
-        Files.createDirectories(lidFile.parent)
-        def encoder = new LinEncoder().withPrettyPrint(true)
-        def time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(123456789), ZoneOffset.UTC)
-        def entry = new FileOutput("path/to/file",new Checksum("45372qe","nextflow","standard"),
-            "lid://123987/file.bam", "lid://123987/", null, 1234, time, time, null)
-        def jsonSer = encoder.encode(entry)
-        def expectedOutput = "Error loading lid:///?type=FileOutput - Cannot get record from the root LID URI"
-        lidFile.text = jsonSer
-        when:
-        new LinCommandImpl().describe(configMap, ["lid:///?type=FileOutput"])
-        def stdout = capture
-            .toString()
-            .readLines()// remove the log part
-            .findResults { line -> !line.contains('DEBUG') ? line : null }
-            .findResults { line -> !line.contains('INFO') ? line : null }
-            .findResults { line -> !line.contains('plugin') ? line : null }
-
-        then:
-        stdout.size() == expectedOutput.readLines().size()
-        stdout.join('\n') == expectedOutput
-    }
-
     def 'should diff'(){
         given:
         def lidFile = storeLocation.resolve("12345/.data.json")
@@ -333,7 +308,7 @@ class LinCommandImplTest extends Specification{
    },
 -  "source": "lid://123987/file.bam",
 +  "source": "lid://123987/file2.bam",
-   "workflowRun": "lid://123987/",
+   "workflowLaunch": "lid://123987/",
    "taskRun": null,
 -  "size": 1234,
 +  "size": 1235,
@@ -384,8 +359,8 @@ class LinCommandImplTest extends Specification{
     def 'should print error store is not found in diff'(){
         when:
         def config = new ConfigMap()
-        new LinCommandImpl().log(config)
-        new LinCommandImpl().describe(config, ["lid:///12345"])
+        new LinCommandImpl().list(config)
+        new LinCommandImpl().view(config, ["lid:///12345"])
         new LinCommandImpl().render(config, ["lid://12345", "output.html"])
         new LinCommandImpl().diff(config, ["lid://89012", "lid://12345"])
 
@@ -410,7 +385,7 @@ class LinCommandImplTest extends Specification{
         Files.createDirectories(lidFile.parent)
         def lidFile2 = storeLocation.resolve("123987/file2.bam/.data.json")
         Files.createDirectories(lidFile2.parent)
-        def lidFile3 = storeLocation.resolve(".meta/123987/file3.bam/.data.json")
+        def lidFile3 = storeLocation.resolve("123987/file3.bam/.data.json")
         Files.createDirectories(lidFile3.parent)
         def encoder = new LinEncoder().withPrettyPrint(true)
         def time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(123456789), ZoneOffset.UTC)

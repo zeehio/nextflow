@@ -40,8 +40,8 @@ class CmdLineage extends CmdBase implements UsageAware {
     private static final String NAME = 'lineage'
 
     interface LinCommand extends ExtensionPoint {
-        void log(ConfigMap config)
-        void describe(ConfigMap config, List<String> args)
+        void list(ConfigMap config)
+        void view(ConfigMap config, List<String> args)
         void render(ConfigMap config, List<String> args)
         void diff(ConfigMap config, List<String> args)
         void find(ConfigMap config, List<String> args)
@@ -61,8 +61,8 @@ class CmdLineage extends CmdBase implements UsageAware {
     private ConfigMap config
 
     CmdLineage() {
-        commands << new CmdLog()
-        commands << new CmdDescribe()
+        commands << new CmdList()
+        commands << new CmdView()
         commands << new CmdRender()
         commands << new CmdDiff()
         commands << new CmdFind()
@@ -94,7 +94,7 @@ class CmdLineage extends CmdBase implements UsageAware {
         // load the command operations
         this.operation = Plugins.getExtension(LinCommand)
         if( !operation )
-            throw new IllegalStateException("Unable to load lineage extensions.")
+            throw new IllegalStateException("Unable to load lineage records.")
         // consume the first argument
         getCmd(args).apply(args.drop(1))
     }
@@ -148,7 +148,7 @@ class CmdLineage extends CmdBase implements UsageAware {
         throw new AbortOperationException(msg)
     }
 
-    class CmdLog implements SubCmd {
+    class CmdList implements SubCmd {
 
         @Override
         String getName() {
@@ -157,7 +157,7 @@ class CmdLineage extends CmdBase implements UsageAware {
 
         @Override
         String getDescription() {
-            return 'List the executions with lineage enabled'
+            return 'List all workflow runs with lineage enabled'
         }
 
         @Override
@@ -167,7 +167,7 @@ class CmdLineage extends CmdBase implements UsageAware {
                 usage()
                 return
             }
-            operation.log(config)
+            operation.list(config)
         }
 
         @Override
@@ -177,7 +177,7 @@ class CmdLineage extends CmdBase implements UsageAware {
         }
     }
 
-    class CmdDescribe implements SubCmd{
+    class CmdView implements SubCmd{
 
         @Override
         String getName() {
@@ -186,7 +186,7 @@ class CmdLineage extends CmdBase implements UsageAware {
 
         @Override
         String getDescription() {
-            return 'Print the description of a Lineage ID (lid)'
+            return 'View a lineage record'
         }
 
         void apply(List<String> args) {
@@ -196,7 +196,7 @@ class CmdLineage extends CmdBase implements UsageAware {
                 return
             }
 
-            operation.describe(config, args)
+            operation.view(config, args)
         }
 
         @Override
@@ -229,7 +229,7 @@ class CmdLineage extends CmdBase implements UsageAware {
         @Override
         void usage() {
             println description
-            println "Usage: nextflow $NAME $name <workflow output lid> [<html output file>]"
+            println "Usage: nextflow $NAME $name <lid> [<html output file>]"
         }
 
     }
@@ -241,7 +241,7 @@ class CmdLineage extends CmdBase implements UsageAware {
 
         @Override
         String getDescription() {
-            return 'Show differences between two lineage descriptions'
+            return 'Show differences between two lineage records'
         }
 
         void apply(List<String> args) {
@@ -268,12 +268,12 @@ class CmdLineage extends CmdBase implements UsageAware {
 
         @Override
         String getDescription() {
-            return 'Find lineage metadata descriptions matching with a query'
+            return 'Find lineage records that match a query'
         }
 
         void apply(List<String> args) {
-            if (args.size() != 1) {
-                println("ERROR: Incorrect number of parameters")
+            if (args.size() == 0) {
+                println("ERROR: At least one key-value pair is required")
                 usage()
                 return
             }
@@ -283,7 +283,7 @@ class CmdLineage extends CmdBase implements UsageAware {
         @Override
         void usage() {
             println description
-            println "Usage: nextflow $NAME $name <query>"
+            println "Usage: nextflow $NAME $name <key>=<value> [<key>=<value> ...]"
         }
 
     }

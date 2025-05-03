@@ -29,7 +29,7 @@ interface LinExtension {
     static final Map PARAMS = [
         labels: List,
         taskRun: [String,GString],
-        workflowRun: [String,GString],
+        workflowLaunch: [String,GString],
     ]
 
     /**
