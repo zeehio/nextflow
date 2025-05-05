@@ -77,8 +77,8 @@ class LinCommandImplTest extends Specification{
         def lidLog = new DefaultLinHistoryLog(historyFile)
         def uniqueId = UUID.randomUUID()
         def date = new Date();
-        def recordEntry = "${LinHistoryRecord.TIMESTAMP_FMT.format(date)}\trun_name\t${uniqueId}\tlid://123\tlid://456".toString()
-        lidLog.write("run_name", uniqueId, "lid://123", "lid://456", date)
+        def recordEntry = "${LinHistoryRecord.TIMESTAMP_FMT.format(date)}\trun_name\t${uniqueId}\tlid://123456\tlid://456789".toString()
+        lidLog.write("run_name", uniqueId, "lid://123456", "lid://456789", date)
         when:
         new LinCommandImpl().list(configMap)
         def stdout = capture

@@ -167,7 +167,7 @@ class LinPath implements Path, LogicalDataPath {
         if( parent ) {
             final filename = currentPath.getFileName().toString()
             subPath = subPath
-                ? "${subPath}${SEPARATOR}${filename}".toString()
+                ? "${filename}${SEPARATOR}${subPath}".toString()
                 : filename
             return findTarget(fs, parent.toString(), false, subPath)
         }
