@@ -716,8 +716,8 @@ List the Nextflow runs with lineage metadata enabled, printing the corresponding
 
 ```console
 $ nextflow lineage list
-TIMESTAMP               RUN NAME        SESSION ID                              LAUNCH LID                              RUN LID                               
-2025-05-02 19:06:15 CDT stoic_shaw      bc79451f-c573-4b7d-8e7c-697be8d9cefc    lid://cd7197c02ab1250eafc2bf7499715e5f  lid://304c57e48ab6b324715ad2c5ba55b25e
+TIMESTAMP               RUN NAME        SESSION ID                              STATUS          LAUNCH LID                              RUN LID                               
+2025-05-05 11:19:30 CDT serene_hodgkin  bc79451f-c573-4b7d-8e7c-697be8d9cefc    SUCCEEDED       lid://89c4d20aebab29ef3e1c2a0eac32fa64  lid://f8dc0b27c21a8b60b2058a60b253632b
 ```
 
 View a lineage record.
