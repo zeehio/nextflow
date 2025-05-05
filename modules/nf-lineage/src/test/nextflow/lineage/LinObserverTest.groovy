@@ -468,7 +468,7 @@ class LinObserverTest extends Specification {
         Path.of('/path/to/outDir')      | Path.of('../relative')                | "relative"
     }
 
-    def 'should save workflow output'() {
+    def 'should save workflow run'() {
         given:
         def folder = Files.createTempDirectory('test')
         def config = [lineage:[enabled: true, store:[location:folder.toString()]]]
@@ -493,6 +493,7 @@ class LinObserverTest extends Specification {
             getUniqueId()>>uniqueId
             getRunName()>>"test_run"
             getParams() >> new ScriptBinding.ParamsMap()
+            isSuccess() >> true
         }
         store.open(LineageConfig.create(session))
         def observer = new LinObserver(session, store)
@@ -538,6 +539,7 @@ class LinObserverTest extends Specification {
         then: 'Check history file is updated and Workflow Result is written in the lid store'
             def finalLid = store.getHistoryLog().getRecord(uniqueId).runLid.substring(LID_PROT.size())
             def workflowRun = store.load(finalLid) as WorkflowRun
+            workflowRun.status == "SUCCEEDED"
             workflowRun.output == [new Parameter(Path.simpleName, "a", "lid://${observer.launchId}/foo/file.bam"), new Parameter(Path.simpleName, "b", "lid://${observer.launchId}/foo/file2.bam")]
 
         cleanup:

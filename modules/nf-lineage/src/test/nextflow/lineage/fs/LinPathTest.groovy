@@ -158,7 +158,7 @@ class LinPathTest extends Specification {
         wdir.resolve('12345/output1/.data.json').text = '{"type":"FileOutput", "path": "' + outputFolder.toString() + '"}'
         wdir.resolve('12345/path/to/file2.txt/.data.json').text = '{"type":"FileOutput", "path": "' + outputFile.toString() + '"}'
         def time = OffsetDateTime.now()
-        def workflowRun = new WorkflowRun(time, "lid://1234", [new Parameter( "Path", "a", "lid://1234/a.txt")])
+        def workflowRun = new WorkflowRun(time, "lid://1234", "SUCCEEDED", [new Parameter( "Path", "a", "lid://1234/a.txt")])
         def wfResultsMetadata = new LinEncoder().withPrettyPrint(true).encode(workflowRun)
         wdir.resolve('5678/').mkdirs()
         wdir.resolve('5678/.data.json').text = wfResultsMetadata

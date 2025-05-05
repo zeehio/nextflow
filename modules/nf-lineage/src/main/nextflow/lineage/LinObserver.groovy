@@ -85,7 +85,6 @@ class LinObserver implements TraceObserverV2 {
     private LinStore store
     private Session session
     private List<Parameter> outputs = new LinkedList<Parameter>()
-    private WorkflowRun workflowRun
     private Map<String,String> outputsStoreDirLid = new HashMap<String,String>(10)
     private PathNormalizer normalizer
 
@@ -107,19 +106,23 @@ class LinObserver implements TraceObserverV2 {
     void onFlowBegin() {
         normalizer = new PathNormalizer(session.workflowMetadata)
         launchId = storeWorkflowLaunch(normalizer)
-        this.store.getHistoryLog().write(session.runName, session.uniqueId, asUriString(launchId), '-')
+        this.store.getHistoryLog().write(session.runName, session.uniqueId, asUriString(launchId))
     }
 
     @Override
-    void onFlowComplete(){
+    void onFlowComplete() {
+        final status = session.isCancelled()
+            ? "CANCELLED"
+            : session.isSuccess() ? "SUCCEEDED" : "FAILED"
         final workflowRun = new WorkflowRun(
             OffsetDateTime.now(),
             asUriString(launchId),
+            status,
             outputs
         )
         final runId = CacheHelper.hasher(workflowRun).hash().toString()
         this.store.save(runId, workflowRun)
-        this.store.getHistoryLog().updateRunLid(session.uniqueId, asUriString(runId))
+        this.store.getHistoryLog().finalize(session.uniqueId, asUriString(runId), status)
     }
 
     protected Collection<Path> allScriptFiles() {

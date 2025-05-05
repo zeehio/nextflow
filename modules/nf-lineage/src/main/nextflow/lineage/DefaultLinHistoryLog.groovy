@@ -39,12 +39,12 @@ class DefaultLinHistoryLog implements LinHistoryLog {
     }
 
     @Override
-    void write(String name, UUID id, String launchLid, String runLid, Date date = null) {
+    void write(String name, UUID id, String launchLid, Date date = null) {
         assert id
         def timestamp = date ?: new Date()
         final recordFile = path.resolve(id.toString())
         try {
-            recordFile.text = new LinHistoryRecord(timestamp, name, id, launchLid, runLid).toString()
+            recordFile.text = new LinHistoryRecord(timestamp, name, id, null, launchLid, null).toString()
             log.trace("Record for $id written in lineage history log ${FilesEx.toUriString(this.path)}")
         }catch (Throwable e) {
             log.warn("Can't write record $id file ${FilesEx.toUriString(recordFile)}", e.message)
@@ -52,12 +52,12 @@ class DefaultLinHistoryLog implements LinHistoryLog {
     }
 
     @Override
-    void updateRunLid(UUID id, String runLid) {
+    void finalize(UUID id, String runLid, String status) {
         assert id
         final recordFile = path.resolve(id.toString())
         try {
             def current = LinHistoryRecord.parse(path.resolve(id.toString()).text)
-            recordFile.text = new LinHistoryRecord(current.timestamp, current.runName, id, current.launchLid, runLid).toString()
+            recordFile.text = new LinHistoryRecord(current.timestamp, current.runName, id, status, current.launchLid, runLid).toString()
         }
         catch (Throwable e) {
             log.warn("Can't read session $id file: ${FilesEx.toUriString(recordFile)}", e.message)

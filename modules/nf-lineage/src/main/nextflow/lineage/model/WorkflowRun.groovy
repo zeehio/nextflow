@@ -39,6 +39,10 @@ class WorkflowRun implements LinSerializable {
      */
     String workflowLaunch
     /**
+     * Completion status of the workflow run, can be SUCCEEDED, FAILED, or CANCELLED
+     */
+    String status
+    /**
      * Workflow output
      */
     List<Parameter> output

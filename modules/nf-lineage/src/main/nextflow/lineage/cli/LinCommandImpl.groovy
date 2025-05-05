@@ -82,6 +82,7 @@ class LinCommandImpl implements CmdLineage.LinCommand {
             .head('TIMESTAMP')
             .head('RUN NAME')
             .head('SESSION ID')
+            .head('STATUS')
             .head('LAUNCH LID')
             .head('RUN LID')
         for (LinHistoryRecord record : records) {

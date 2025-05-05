@@ -46,10 +46,9 @@ class DefaultLinHistoryLogTest extends Specification {
         UUID sessionId = UUID.randomUUID()
         def runName = "TestRun"
         def launchLid = "lid://123"
-        def runLid = "lid://456"
 
         when:
-        linHistoryLog.write(runName, sessionId, launchLid, runLid)
+        linHistoryLog.write(runName, sessionId, launchLid)
 
         then:
         def files = historyFile.listFiles()
@@ -58,7 +57,8 @@ class DefaultLinHistoryLogTest extends Specification {
         parsedRecord.sessionId == sessionId
         parsedRecord.runName == runName
         parsedRecord.launchLid == launchLid
-        parsedRecord.runLid == runLid
+        parsedRecord.runLid == '-'
+        parsedRecord.status == '-'
     }
 
     def "should return correct record for existing session"() {
@@ -66,10 +66,9 @@ class DefaultLinHistoryLogTest extends Specification {
         UUID sessionId = UUID.randomUUID()
         def runName = "Run1"
         def launchLid = "lid://123"
-        def runLid = "lid://456"
 
         and:
-        linHistoryLog.write(runName, sessionId, launchLid, runLid)
+        linHistoryLog.write(runName, sessionId, launchLid)
 
         when:
         def record = linHistoryLog.getRecord(sessionId)
@@ -77,7 +76,8 @@ class DefaultLinHistoryLogTest extends Specification {
         record.sessionId == sessionId
         record.runName == runName
         record.launchLid == launchLid
-        record.runLid == runLid
+        record.runLid == '-'
+        record.status == '-'
     }
 
     def "should return null and warn if session does not exist"() {
@@ -91,18 +91,20 @@ class DefaultLinHistoryLogTest extends Specification {
         def runName = "Run1"
         def launchLid = "launch-lid"
         def runLid = "run-lid"
+        def status = "SUCCEEDED"
 
         and:
-        linHistoryLog.write(runName, sessionId, launchLid, '-')
+        linHistoryLog.write(runName, sessionId, launchLid)
 
         when:
-        linHistoryLog.updateRunLid(sessionId, runLid)
+        linHistoryLog.finalize(sessionId, runLid, status)
 
         then:
         def files = historyFile.listFiles()
         files.size() == 1
         def parsedRecord = LinHistoryRecord.parse(files[0].text)
         parsedRecord.runLid == runLid
+        parsedRecord.status == status
     }
 
     def "update should do nothing if session does not exist"() {
@@ -111,17 +113,17 @@ class DefaultLinHistoryLogTest extends Specification {
         UUID nonExistingSessionId = UUID.randomUUID()
         def runName = "Run1"
         def launchLid = "lid://123"
-        def runLid = "lid://456"
         and:
-        linHistoryLog.write(runName, existingSessionId, launchLid, '-')
+        linHistoryLog.write(runName, existingSessionId, launchLid)
 
         when:
-        linHistoryLog.updateRunLid(nonExistingSessionId, runLid)
+        linHistoryLog.finalize(nonExistingSessionId, "lid://456", "SUCCEEDED")
         then:
         def files = historyFile.listFiles()
         files.size() == 1
         def parsedRecord = LinHistoryRecord.parse(files[0].text)
         parsedRecord.runLid == '-'
+        parsedRecord.status == '-'
     }
 
     def 'should get records' () {
@@ -129,9 +131,8 @@ class DefaultLinHistoryLogTest extends Specification {
         UUID sessionId = UUID.randomUUID()
         def runName = "Run1"
         def launchLid = "lid://123"
-        def runLid = "-"
         and:
-        linHistoryLog.write(runName, sessionId, launchLid, runLid)
+        linHistoryLog.write(runName, sessionId, launchLid)
 
         when:
         def records = linHistoryLog.getRecords()
@@ -140,7 +141,8 @@ class DefaultLinHistoryLogTest extends Specification {
         records[0].sessionId == sessionId
         records[0].runName == runName
         records[0].launchLid == launchLid
-        records[0].runLid == runLid
+        records[0].runLid == '-'
+        records[0].status == '-'
     }
 }
 

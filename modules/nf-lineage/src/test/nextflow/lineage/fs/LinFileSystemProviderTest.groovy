@@ -181,7 +181,7 @@ class LinFileSystemProviderTest extends Specification {
         def config = [lineage:[store:[location:wdir.toString()]]]
         def outputMeta = wdir.resolve("12345")
         outputMeta.mkdirs()
-        def metadata = '{\n  "type": "WorkflowRun",\n  "createdAt": null,\n  "workflowLaunch": null,\n  "output": null\n}'
+        def metadata = '{\n  "type": "WorkflowRun",\n  "createdAt": null,\n  "workflowLaunch": null,\n  "status": null,\n  "output": null\n}'
         outputMeta.resolve(".data.json").text = metadata
 
         Global.session = Mock(Session) { getConfig()>>config }

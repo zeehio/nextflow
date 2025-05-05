@@ -87,7 +87,7 @@ class LinEncoderTest extends Specification{
         def encoder = new LinEncoder()
         and:
         def time = OffsetDateTime.now()
-        def wfResults = new WorkflowRun(time, "lid://1234", [new Parameter("String", "a", "A"), new Parameter("String", "b", "B")])
+        def wfResults = new WorkflowRun(time, "lid://1234", "SUCCEEDED", [new Parameter("String", "a", "A"), new Parameter("String", "b", "B")])
         when:
         def encoded = encoder.encode(wfResults)
         def object = encoder.decode(encoded)
@@ -97,6 +97,7 @@ class LinEncoderTest extends Specification{
         def result = object as WorkflowRun
         result.createdAt == time
         result.workflowLaunch == "lid://1234"
+        result.status == "SUCCEEDED"
         result.output == [new Parameter("String", "a", "A"), new Parameter("String", "b", "B")]
     }
 
@@ -141,7 +142,7 @@ class LinEncoderTest extends Specification{
         def encoded = encoder.encode(wfResults)
         def object = encoder.decode(encoded)
         then:
-        encoded == '{"type":"WorkflowRun","createdAt":null,"workflowLaunch":"lid://1234","output":null}'
+        encoded == '{"type":"WorkflowRun","createdAt":null,"workflowLaunch":"lid://1234","status":null,"output":null}'
         def result = object as WorkflowRun
         result.createdAt == null
 
