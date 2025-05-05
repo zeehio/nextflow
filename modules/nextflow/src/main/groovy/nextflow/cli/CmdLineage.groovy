@@ -272,7 +272,7 @@ class CmdLineage extends CmdBase implements UsageAware {
         }
 
         void apply(List<String> args) {
-            if (args.size() == 0) {
+            if (args.size() < 1) {
                 println("ERROR: At least one key-value pair is required")
                 usage()
                 return
